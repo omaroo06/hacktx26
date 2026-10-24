@@ -1,0 +1,12 @@
+# Python 3.11 recommended (tested with 3.11 on Windows 11).
+mediapipe==1.1.1
+# MediaPipe depends on opencv-contrib-python; using the same package avoids
+# two conflicting copies of cv2 in the environment.
+opencv-contrib-python==5.0.0.93
+numpy==2.4.6
+streamlit==1.66.1
+# Bundles an FFmpeg binary with libx264, so no global FFmpeg install is needed.
+imageio-ffmpeg==0.6.0
+
+# Testing
+pytest==9.1.1
