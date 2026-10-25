@@ -4,6 +4,7 @@ import { RidgeDivider } from "../decor/Ornaments";
 const LINKS = [
   { href: "#top", label: "home" },
   { href: "#wall", label: "climbing wall" },
+  { href: "#coach", label: "coach" },
   { href: "#how", label: "how it works" },
   { href: "#vr", label: "vr preview" },
 ];
@@ -33,7 +34,7 @@ export function Footer() {
       </div>
       <div className="border-t-2 border-dashed border-cream/15">
         <p className="mx-auto max-w-[var(--content-max)] px-[var(--space-gutter)] py-5 pixel text-[0.66rem] text-cream/50">
-          <span className="brand">beta</span> · Every wall has a story · Photos stay on your device
+          <span className="brand">beta</span> · Every wall has a story · Photos and clips are analyzed by Gemini and Muse Spark
         </p>
       </div>
     </footer>

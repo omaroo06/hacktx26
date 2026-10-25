@@ -18,7 +18,7 @@ function Cloud({ className = "", style }: { className?: string; style?: CSSPrope
   );
 }
 
-const MARQUEE = ["Capture", "Discover", "Enter the World", "Every wall has a story", "Map your moves", "Step into VR"];
+const MARQUEE = ["Capture", "Discover", "Get coached", "Enter the World", "Every wall has a story", "Learn from your crew", "Step into VR"];
 
 export function Hero() {
   return (

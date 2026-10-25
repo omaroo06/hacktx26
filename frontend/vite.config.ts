@@ -7,5 +7,9 @@ export default defineConfig({
   server: {
     port: 5173,
     open: false,
+    // The API server (server/index.ts) holds the Gemini and Meta keys. The browser only talks to /api.
+    proxy: {
+      "/api": { target: "http://localhost:8787", changeOrigin: true },
+    },
   },
 });

@@ -2,6 +2,7 @@ import { Pencil, RotateCcw } from "lucide-react";
 import type { RouteSelection, WallPhoto } from "../../types/wall";
 import { getHoldColor } from "../../lib/holdColors";
 import { HoldShape, Sparkle } from "../decor/Ornaments";
+import { useBetaSession } from "../../state/BetaSession";
 
 interface RouteTicketProps {
   photo: WallPhoto;
@@ -11,6 +12,7 @@ interface RouteTicketProps {
 }
 
 export function RouteTicket({ photo, route, onEdit, onStartOver }: RouteTicketProps) {
+  const { routeHolds, detection } = useBetaSession();
   if (!route.color) return null;
   const color = getHoldColor(route.color);
   const name = route.name.trim() || `${color.label} route`;
@@ -19,7 +21,14 @@ export function RouteTicket({ photo, route, onEdit, onStartOver }: RouteTicketPr
   const draft = {
     wall: { image: photo.name, widthPx: photo.widthPx, heightPx: photo.heightPx, dimensionsM: null },
     route: { color: route.color, name: route.name.trim() || null, grade: route.grade.trim() || null, source: route.source },
-    holds: [],
+    holds: routeHolds.map((h) => ({
+      number: h.number,
+      kind: h.kind,
+      // Normalized to the photo (0–1, origin top-left) and in photo pixels.
+      norm: { x: h.x, y: h.y },
+      pixel: { x: Math.round(h.x * photo.widthPx), y: Math.round(h.y * photo.heightPx) },
+    })),
+    detectedBy: detection.model,
   };
 
   return (
@@ -58,13 +67,23 @@ export function RouteTicket({ photo, route, onEdit, onStartOver }: RouteTicketPr
           <dt>Grade</dt>
           <dd>{grade}</dd>
         </div>
+        <div className="col-span-full">
+          <dt>Holds mapped</dt>
+          <dd>
+            {routeHolds.length
+              ? `${routeHolds.length} numbered, start to finish`
+              : detection.status === "loading"
+                ? "Gemini is still reading the photo…"
+                : "None yet"}
+          </dd>
+        </div>
       </dl>
 
       <details className="data-peek">
         <summary>Peek at the route data</summary>
         <p className="mt-2 text-[0.88rem] text-ink/70">
-          The route record <span className="brand">beta</span> carries into your VR wall. Hold positions and wall
-          dimensions fill in as your wall is mapped.
+          The route record <span className="brand">beta</span> carries into your VR wall. Hold positions come from
+          the photo; wall dimensions in meters fill in once the wall is calibrated.
         </p>
         <pre>{JSON.stringify(draft, null, 2)}</pre>
       </details>

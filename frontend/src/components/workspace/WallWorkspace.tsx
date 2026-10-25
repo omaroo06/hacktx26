@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, CircleAlert, Sun, Maximize, MoveHorizontal, CheckCircle2, X } from "lucide-react";
-import type { RouteSelection } from "../../types/wall";
-import { useWallPhoto } from "../../hooks/useWallPhoto";
 import { useFileDrop } from "../../hooks/useFileDrop";
+import { EMPTY_ROUTE, useBetaSession } from "../../state/BetaSession";
 import { ACCEPT_ATTRIBUTE } from "../../lib/imageValidation";
 import { UploadZone } from "./UploadZone";
 import { WallViewer } from "./WallViewer";
@@ -11,8 +10,6 @@ import { RouteTicket } from "./RouteTicket";
 import { QuestSteps, type QuestStep } from "./QuestSteps";
 import { Sparkle } from "../decor/Ornaments";
 
-const EMPTY_ROUTE: RouteSelection = { color: null, name: "", grade: "", source: "manual" };
-
 const TIPS = [
   { icon: Maximize, title: "Fit the whole wall", body: "Keep the floor and top edge in frame so every hold is visible." },
   { icon: MoveHorizontal, title: "Shoot straight on", body: "Stand back and face the wall squarely to limit perspective tilt." },
@@ -20,9 +17,9 @@ const TIPS = [
 ];
 
 export function WallWorkspace() {
-  const { photo, status, error, loadFiles, remove, clearError } = useWallPhoto();
+  const { wall, route, setRoute, detection } = useBetaSession();
+  const { photo, status, error, loadFiles, remove, clearError } = wall;
   const [step, setStep] = useState<QuestStep>("capture");
-  const [route, setRoute] = useState<RouteSelection>(EMPTY_ROUTE);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const { isDragging, dropHandlers } = useFileDrop(loadFiles);
@@ -119,7 +116,11 @@ export function WallWorkspace() {
                     <div className="mt-4 flex items-start gap-3 rounded-[var(--r-md)] border-[3px] border-ink bg-mint/60 p-4">
                       <CheckCircle2 size={22} strokeWidth={2.6} className="mt-0.5 shrink-0" />
                       <p className="text-[0.98rem]">
-                        Looking good. Check the preview, then choose which colored route you want to climb.
+                        {detection.status === "loading"
+                          ? "Looking good. Gemini is marking every hold on your photo while you choose a route."
+                          : detection.status === "ready"
+                            ? `Looking good. Gemini found ${detection.holds.length} holds. Choose which colored route you want to climb.`
+                            : "Looking good. Check the preview, then choose which colored route you want to climb."}
                       </p>
                     </div>
                   ) : (

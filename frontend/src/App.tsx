@@ -5,10 +5,12 @@ import { WallWorkspace } from "./components/workspace/WallWorkspace";
 import { HowItWorks } from "./components/how/HowItWorks";
 import { VrPreview } from "./components/vr/VrPreview";
 import { RidgeDivider } from "./components/decor/Ornaments";
+import { CoachSection } from "./components/coach/CoachSection";
+import { BetaSessionProvider } from "./state/BetaSession";
 
 export default function App() {
   return (
-    <>
+    <BetaSessionProvider>
       <a href="#wall" className="skip-link">
         Skip to the climbing wall workspace
       </a>
@@ -18,11 +20,12 @@ export default function App() {
         <RidgeDivider fill="var(--color-forest)" className="-mb-px mt-16 sm:mt-20" />
         <WallWorkspace />
         <RidgeDivider fill="var(--color-forest)" flip className="-mt-px" />
+        <CoachSection />
         <HowItWorks />
         <RidgeDivider fill="var(--color-sky)" className="-mb-px" />
         <VrPreview />
       </main>
       <Footer />
-    </>
+    </BetaSessionProvider>
   );
 }

@@ -71,6 +71,10 @@ export interface Hold {
   source: DataSource;
   /** Detector confidence in [0, 1]; absent for manually placed holds. */
   confidence?: number;
+  /** Start and finish holds are marked on the wall; volumes are the big geometric shapes. */
+  kind?: "hold" | "start" | "finish" | "volume";
+  /** The hold's box normalized to the photo (0–1, origin top-left), for overlays. */
+  norm?: { x: number; y: number; w: number; h: number };
 }
 
 export interface WallCalibration {

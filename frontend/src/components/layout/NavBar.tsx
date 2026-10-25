@@ -6,10 +6,11 @@ import { useActiveSection } from "../../hooks/useActiveSection";
 const LINKS = [
   { id: "top", label: "home" },
   { id: "wall", label: "climbing wall" },
+  { id: "coach", label: "coach" },
   { id: "how", label: "how it works" },
 ] as const;
 
-const SECTION_IDS = ["top", "wall", "how", "vr"] as const;
+const SECTION_IDS = ["top", "wall", "coach", "how", "vr"] as const;
 
 export function NavBar() {
   const active = useActiveSection(SECTION_IDS);

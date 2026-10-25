@@ -2,6 +2,7 @@ import { ArrowLeft, Check, Flag, ScanSearch } from "lucide-react";
 import type { HoldColorId, RouteSelection } from "../../types/wall";
 import { HOLD_COLORS, QUICK_GRADES, getHoldColor } from "../../lib/holdColors";
 import { HoldShape } from "../decor/Ornaments";
+import { useBetaSession } from "../../state/BetaSession";
 
 interface RouteSelectorProps {
   route: RouteSelection;
@@ -11,8 +12,12 @@ interface RouteSelectorProps {
 }
 
 export function RouteSelector({ route, onChange, onBack, onConfirm }: RouteSelectorProps) {
+  const { detection } = useBetaSession();
   const selected = route.color ? getHoldColor(route.color) : null;
   const grade = route.grade.trim().toUpperCase();
+  const detected = detection.status === "ready";
+  const countOf = (id: HoldColorId) => detection.holds.filter((h) => h.color === id && h.kind !== "volume").length;
+  const foundLabels = detection.routeColors.map((c) => getHoldColor(c).label.toLowerCase());
 
   return (
     <form
@@ -33,21 +38,32 @@ export function RouteSelector({ route, onChange, onBack, onConfirm }: RouteSelec
           </span>
         </div>
         <p className="-mt-0.5 mb-3 text-[0.95rem] text-ink/70">
-          Which colored holds make up the route you want to climb?
+          {detected && foundLabels.length
+            ? `Gemini spotted routes in ${listWords(foundLabels)}. Which one is yours?`
+            : "Which colored holds make up the route you want to climb?"}
         </p>
         <div className="swatch-grid">
           {HOLD_COLORS.map((c, i) => {
             const isSelected = route.color === c.id;
+            const count = detected ? countOf(c.id) : 0;
+            const isFound = detection.routeColors.includes(c.id);
             return (
-              <label key={c.id} className={`swatch ${isSelected ? "is-selected" : ""}`}>
+              <label key={c.id} className={`swatch ${isSelected ? "is-selected" : ""} ${detected && !count ? "is-quiet" : ""}`}>
                 <input
                   type="radio"
                   name="hold-color"
                   value={c.id}
                   checked={isSelected}
-                  onChange={() => onChange({ color: c.id as HoldColorId })}
+                  onChange={() => onChange({ color: c.id as HoldColorId, source: isFound ? "detected" : "manual" })}
                   className="sr-only"
+                  aria-describedby={count ? `count-${c.id}` : undefined}
                 />
+                {count > 0 && (
+                  <span id={`count-${c.id}`} className={`swatch-count ${isFound ? "is-found" : ""}`}>
+                    <span className="sr-only">{count} holds found</span>
+                    <span aria-hidden="true">×{count}</span>
+                  </span>
+                )}
                 <span className="swatch-marker" aria-hidden="true">
                   <svg viewBox="0 0 14 10" width="14" height="10">
                     <path d="M1 1 L13 1 L7 9 Z" fill="var(--color-ink)" />
@@ -120,8 +136,11 @@ export function RouteSelector({ route, onChange, onBack, onConfirm }: RouteSelec
         <div>
           <p className="display-text text-[1.2rem] leading-tight">discover your holds.</p>
           <p className="mt-1 text-[0.93rem] text-ink/75">
-            Routes share the wall, so your hold color tells <span className="brand">beta</span> which climb is yours.
-            Every hold in that color belongs to your route, ready to review, adjust, and carry into VR.
+            {detection.status === "loading"
+              ? "Gemini is reading your photo and marking every hold. Pick a color whenever you're ready."
+              : detected && selected
+                ? `Your ${selected.label.toLowerCase()} holds are numbered on the photo, start to finish. Your coach uses those numbers when it talks about your climb.`
+                : <>Routes share the wall, so your hold color tells <span className="brand">beta</span> which climb is yours. Every hold in that color belongs to your route, ready to carry into VR.</>}
           </p>
         </div>
       </div>
@@ -141,4 +160,9 @@ export function RouteSelector({ route, onChange, onBack, onConfirm }: RouteSelec
       </div>
     </form>
   );
+}
+
+function listWords(words: string[]): string {
+  if (words.length <= 1) return words.join("");
+  return `${words.slice(0, -1).join(", ")} and ${words[words.length - 1]}`;
 }
