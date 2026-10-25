@@ -1,0 +1,643 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Design tokens
+   Colors and fonts live in @theme so Tailwind utilities (bg-forest,
+   font-display, …) and hand-written CSS share one source of truth.
+   ========================================================================== */
+
+@theme {
+  --color-cream: #fff3d6;
+  --color-paper: #fffaec;
+  --color-parchment: #f6e2b3;
+  --color-sand: #e9d0a0;
+  --color-forest: #244638;
+  --color-forest-deep: #183227;
+  --color-moss: #3c6b52;
+  --color-ink: #202820;
+  --color-gold: #f3c84b;
+  --color-gold-deep: #d9a92a;
+  --color-sky: #78c6df;
+  --color-sky-deep: #4ea6c4;
+  --color-coral: #ed7864;
+  --color-mint: #8bd5ad;
+  --color-lavender: #b7a2e8;
+  --color-lavender-soft: #d4c6f3;
+
+  --font-display: "MedievalSharp", "Palatino Linotype", Georgia, serif;
+  --font-body: "Nunito Variable", "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-pixel: "Silkscreen", ui-monospace, "Cascadia Mono", monospace;
+
+  --breakpoint-xs: 26rem;
+}
+
+:root {
+  /* Borders */
+  --bw-thin: 2px;
+  --bw: 3px;
+  --bw-thick: 4px;
+
+  /* Radii */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --r-xl: 34px;
+  --r-pill: 999px;
+
+  /* Offset "printed" shadows */
+  --shadow-xs: 2px 2px 0 var(--color-ink);
+  --shadow-sm: 3px 3px 0 var(--color-ink);
+  --shadow-md: 5px 5px 0 var(--color-ink);
+  --shadow-lg: 8px 8px 0 var(--color-ink);
+  --shadow-xl: 12px 12px 0 var(--color-ink);
+  --bevel: inset 0 -4px 0 rgb(32 40 32 / 0.16), inset 0 2px 0 rgb(255 255 255 / 0.45);
+
+  /* Spacing rhythm */
+  --space-section: clamp(4.5rem, 9vw, 8rem);
+  --space-gutter: clamp(1rem, 4vw, 2.5rem);
+  --content-max: 1240px;
+
+  /* Motion */
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 120ms;
+  --dur: 220ms;
+  --dur-slow: 480ms;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--color-ink);
+    background-color: var(--color-cream);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-ink);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: 0.005em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  section[id],
+  main[id] {
+    scroll-margin-top: 96px;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-sky-deep);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+}
+
+/* Everything below sits in the components layer so Tailwind utilities
+   (hidden, w-full, …) can still override these classes. */
+@layer components {
+
+/* ==========================================================================
+   Textures & backgrounds
+   ========================================================================== */
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(36 70 56 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(36 70 56 / 0.07) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.bg-grid-dark {
+  background-image:
+    linear-gradient(to right, rgb(255 243 214 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 243 214 / 0.06) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.halftone {
+  background-image: radial-gradient(rgb(32 40 32 / 0.16) 1.4px, transparent 1.6px);
+  background-size: 11px 11px;
+}
+
+.halftone-light {
+  background-image: radial-gradient(rgb(255 243 214 / 0.14) 1.4px, transparent 1.6px);
+  background-size: 12px 12px;
+}
+
+.halftone-fade {
+  -webkit-mask-image: linear-gradient(135deg, black 0%, transparent 70%);
+  mask-image: linear-gradient(135deg, black 0%, transparent 70%);
+}
+
+.parchment {
+  background-color: var(--color-paper);
+  background-image:
+    radial-gradient(ellipse at 15% 10%, rgb(243 200 75 / 0.12), transparent 55%),
+    radial-gradient(ellipse at 90% 95%, rgb(233 208 160 / 0.5), transparent 60%);
+}
+
+.sunburst {
+  background: repeating-conic-gradient(
+    from 0deg at 50% 100%,
+    rgb(243 200 75 / 0.32) 0deg 7deg,
+    transparent 7deg 15deg
+  );
+}
+
+/* ==========================================================================
+   Panels
+   ========================================================================== */
+
+.panel {
+  position: relative;
+  background-color: var(--color-paper);
+  border: var(--bw) solid var(--color-ink);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.panel-inset {
+  border: var(--bw-thin) dashed rgb(32 40 32 / 0.35);
+  border-radius: var(--r-md);
+}
+
+/* Corner rivets on illustrated panels */
+.rivets::before,
+.rivets::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  border: var(--bw-thin) solid var(--color-ink);
+  pointer-events: none;
+}
+.rivets::before {
+  left: 12px;
+}
+.rivets::after {
+  right: 12px;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.btn {
+  --btn-bg: var(--color-cream);
+  --btn-fg: var(--color-ink);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3.25rem;
+  padding: 0.7rem 1.5rem 0.8rem;
+  font-family: var(--font-display);
+  font-size: 1.28rem;
+  letter-spacing: 0.015em;
+  -webkit-text-stroke: 0.028em currentColor;
+  line-height: 1;
+  color: var(--btn-fg);
+  background-color: var(--btn-bg);
+  border: var(--bw) solid var(--color-ink);
+  border-radius: var(--r-md);
+  box-shadow: var(--bevel), var(--shadow-md);
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur) ease;
+}
+
+.btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--bevel), 7px 7px 0 var(--color-ink);
+}
+
+.btn:active {
+  transform: translate(5px, 5px);
+  box-shadow: var(--bevel), 0 0 0 var(--color-ink);
+  transition-duration: 60ms;
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: var(--bevel), var(--shadow-xs);
+  filter: saturate(0.4);
+}
+
+.btn svg {
+  flex-shrink: 0;
+  transition: transform var(--dur) var(--ease-pop);
+}
+.btn:hover:not(:disabled) .btn-arrow {
+  transform: translateX(4px);
+}
+
+.btn-gold {
+  --btn-bg: var(--color-gold);
+}
+.btn-coral {
+  --btn-bg: var(--color-coral);
+}
+.btn-sky {
+  --btn-bg: var(--color-sky);
+}
+.btn-mint {
+  --btn-bg: var(--color-mint);
+}
+.btn-forest {
+  --btn-bg: var(--color-forest);
+  --btn-fg: var(--color-cream);
+}
+.btn-paper {
+  --btn-bg: var(--color-paper);
+}
+
+.btn-sm {
+  min-height: 2.5rem;
+  padding: 0.45rem 0.95rem 0.55rem;
+  font-size: 1.08rem;
+  border-radius: var(--r-sm);
+  box-shadow: var(--bevel), var(--shadow-sm);
+}
+.btn-sm:hover {
+  box-shadow: var(--bevel), 5px 5px 0 var(--color-ink);
+}
+.btn-sm:active {
+  transform: translate(3px, 3px);
+  box-shadow: var(--bevel), 0 0 0 var(--color-ink);
+}
+
+.btn-lg {
+  min-height: 3.9rem;
+  padding: 0.9rem 2rem 1rem;
+  font-size: 1.55rem;
+  border-radius: 18px;
+}
+
+/* Quiet text-style action */
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 800;
+  color: var(--color-forest);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  text-decoration-color: rgb(36 70 56 / 0.35);
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0.25rem 0;
+  transition: text-decoration-color var(--dur) ease, color var(--dur) ease;
+}
+.link-btn:hover {
+  text-decoration-color: var(--color-coral);
+}
+
+/* ==========================================================================
+   Labels & badges
+   ========================================================================== */
+
+.pixel {
+  font-family: var(--font-pixel);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.75rem 0.32rem;
+  font-family: var(--font-pixel);
+  font-size: 0.72rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-ink);
+  background: var(--color-cream);
+  border: var(--bw-thin) solid var(--color-ink);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-xs);
+  white-space: nowrap;
+}
+
+/* Ribbon banner with notched ends */
+.ribbon {
+  position: relative;
+  display: inline-block;
+  padding: 0.55rem clamp(1.6rem, 5vw, 2.4rem) 0.6rem;
+  font-family: var(--font-pixel);
+  font-size: clamp(0.6rem, 2.4vw, 0.78rem);
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-cream);
+  background: var(--color-forest);
+  border: var(--bw) solid var(--color-ink);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%);
+}
+
+/* ==========================================================================
+   Display type
+   ========================================================================== */
+
+.title-stroke {
+  color: var(--color-paper);
+  -webkit-text-stroke: 0.06em var(--color-ink);
+  paint-order: stroke fill;
+  letter-spacing: 0.02em;
+  text-shadow:
+    0.025em 0.025em 0 var(--color-ink),
+    0.045em 0.045em 0 var(--color-ink),
+    0.065em 0.065em 0 var(--color-ink);
+}
+
+.title-stroke-gold {
+  color: var(--color-gold);
+}
+
+/* Every decorative label shares the display face from one place. MedievalSharp
+   ships a single weight, so bold body weights must not leak in as faux-bold. */
+.display-text,
+.lede,
+.logo-word,
+.nav-link,
+.nav-mobile-link,
+.footer-link,
+.hero-lede,
+.marquee-item,
+.quest-step,
+.route-chip,
+.trail-medallion,
+.crt-stamp {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-synthesis: none;
+}
+
+/* Branded descriptive copy. MedievalSharp runs narrow and light, so it gets
+   open spacing and a hairline stroke to read like body text. */
+.lede {
+  font-size: clamp(1.08rem, 1.35vw, 1.18rem);
+  line-height: 1.52;
+  letter-spacing: 0.016em;
+  word-spacing: 0.04em;
+  -webkit-text-stroke: 0.01em currentColor;
+}
+
+/* Heading scale: hero > section > card. */
+.section-title {
+  font-size: clamp(2.25rem, 5.2vw, 3.95rem);
+  line-height: 1.04;
+  letter-spacing: 0.012em;
+}
+.card-title {
+  font-size: clamp(1.6rem, 2.3vw, 2.05rem);
+  line-height: 1.08;
+  letter-spacing: 0.01em;
+}
+
+/* The product name is always lowercase "beta", even inside uppercase labels. */
+.brand {
+  text-transform: none !important;
+  font-variant-caps: normal;
+}
+/* The pixel font draws lowercase as small caps, so swap to the display face. */
+.pixel .brand,
+.tag .brand,
+.section-kicker .brand,
+.field-label .brand,
+.crt-hud .brand,
+.crt-footer .brand {
+  font-family: var(--font-display);
+  font-size: 1.45em;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.section-kicker {
+  font-family: var(--font-pixel);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ==========================================================================
+   Form controls
+   ========================================================================== */
+
+.field-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-family: var(--font-pixel);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.field-input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.65rem 0.95rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  background: var(--color-cream);
+  border: var(--bw) solid var(--color-ink);
+  border-radius: var(--r-sm);
+  box-shadow: inset 3px 3px 0 rgb(32 40 32 / 0.1);
+  transition: box-shadow var(--dur) ease, background-color var(--dur) ease;
+}
+.field-input::placeholder {
+  color: rgb(32 40 32 / 0.42);
+  font-weight: 600;
+}
+.field-input:focus {
+  outline: none;
+  background: var(--color-paper);
+  box-shadow:
+    inset 3px 3px 0 rgb(32 40 32 / 0.08),
+    0 0 0 4px var(--color-sky);
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(18px);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.72) rotate(20deg);
+  }
+}
+
+@keyframes march {
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -6px);
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.anim-float {
+  animation: float 5s ease-in-out infinite;
+}
+.anim-drift {
+  animation: drift 9s ease-in-out infinite;
+}
+.anim-twinkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+.anim-march {
+  animation: march 2.4s linear infinite;
+}
+.anim-pop-in {
+  animation: pop-in var(--dur-slow) var(--ease-pop) both;
+}
+.anim-wiggle {
+  animation: wiggle 3.2s ease-in-out infinite;
+}
+.anim-blink {
+  animation: blink 1.1s steps(1) infinite;
+}
+
+}
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

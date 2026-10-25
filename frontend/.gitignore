@@ -1,0 +1,11 @@
+node_modules
+dist
+*.local
+.DS_Store
+
+# API keys live here. Never commit this file.
+.env
+
+# Saved model answers and temporary uploads
+server/.cache
+server/.uploads
