@@ -13,9 +13,8 @@ We built it for HackTX 2026.
 | Folder | What it is |
 | --- | --- |
 | [`frontend/`](frontend/) | The web app: a React + TypeScript site and a small Express server that talks to Gemini and Meta's Muse Spark. Setup details are in [`frontend/README.md`](frontend/README.md). |
-| [`ai-mentor/`](ai-mentor/) | A Python tool that runs MediaPipe pose estimation on a climbing video and measures elbow angles. Setup details are in [`ai-mentor/README.md`](ai-mentor/README.md). |
 
-The Unity VR project isn't in this repo yet.
+The full Unity project isn't in this repo, but the two VR playback scripts, `WhamMeshPlayer.cs` and `WhamPauseController.cs`, are in the main folder.
 
 ## Run the web app
 
@@ -49,7 +48,7 @@ Then open http://localhost:5173. Your keys stay in `.env`, which is git-ignored,
 
 ## Built with
 
-React, TypeScript, Vite, Tailwind CSS, Node.js, Express, Gemini, Meta Muse Spark, Unity 6, C#, Meta XR SDK, Meta Quest 2, WHAM, SMPL, Python, MediaPipe
+React, TypeScript, Vite, Tailwind CSS, Node.js, Express, Gemini, Meta Muse Spark, Unity 6, C#, Meta XR SDK, Meta Quest 2, WHAM, SMPL, Python
 
 ## What's next
 
