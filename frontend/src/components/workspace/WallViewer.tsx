@@ -99,7 +99,7 @@ function DetectionStatusLine({ routeHoldCount, hasRoute, onRetry }: { routeHoldC
   if (detection.status === "loading") {
     return (
       <span className="pixel flex items-center gap-2 text-[0.66rem] text-gold" role="status">
-        <ScanSearch size={14} strokeWidth={2.6} className="anim-wiggle" /> Gemini is finding holds…
+        <ScanSearch size={14} strokeWidth={2.6} className="anim-wiggle" /> beta is finding holds…
       </span>
     );
   }
@@ -119,7 +119,7 @@ function DetectionStatusLine({ routeHoldCount, hasRoute, onRetry }: { routeHoldC
     const total = detection.holds.filter((h) => h.kind !== "volume").length;
     return (
       <span className="pixel text-[0.66rem] text-cream/75" role="status">
-        {hasRoute ? `${routeHoldCount} route holds numbered` : `Gemini found ${total} holds`}
+        {hasRoute ? `${routeHoldCount} route holds numbered` : `beta found ${total} holds`}
         {detection.cached ? " · saved" : ""}
       </span>
     );

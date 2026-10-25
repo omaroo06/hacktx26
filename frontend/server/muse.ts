@@ -203,12 +203,12 @@ function normalizeFeedback(raw: Partial<CoachFeedback>, maxHold: number): CoachF
 
   return {
     headline: raw.headline?.trim() || "Here's what stood out in your climb.",
-    strengths: (raw.strengths ?? []).filter((s) => s?.title).slice(0, 3).map(point),
+    strengths: (raw.strengths ?? []).filter((s) => s?.title).slice(0, 2).map(point),
     fixes: (raw.fixes ?? [])
       .filter((f) => f?.title)
-      .slice(0, 3)
+      .slice(0, 2)
       .map((f) => ({ ...point(f), drill: f.drill ?? "" })),
-    nextSession: (raw.nextSession ?? []).filter((s) => typeof s === "string" && s.trim()).slice(0, 4),
+    nextSession: (raw.nextSession ?? []).filter((s) => typeof s === "string" && s.trim()).slice(0, 3),
     confidenceNote: raw.confidenceNote?.trim() ?? "",
   };
 }

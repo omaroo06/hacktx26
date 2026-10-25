@@ -39,7 +39,7 @@ export function RouteSelector({ route, onChange, onBack, onConfirm }: RouteSelec
         </div>
         <p className="-mt-0.5 mb-3 text-[0.95rem] text-ink/70">
           {detected && foundLabels.length
-            ? `Gemini spotted routes in ${listWords(foundLabels)}. Which one is yours?`
+            ? `beta spotted routes in ${listWords(foundLabels)}. Which one is yours?`
             : "Which colored holds make up the route you want to climb?"}
         </p>
         <div className="swatch-grid">
@@ -137,7 +137,7 @@ export function RouteSelector({ route, onChange, onBack, onConfirm }: RouteSelec
           <p className="display-text text-[1.2rem] leading-tight">discover your holds.</p>
           <p className="mt-1 text-[0.93rem] text-ink/75">
             {detection.status === "loading"
-              ? "Gemini is reading your photo and marking every hold. Pick a color whenever you're ready."
+              ? "beta is reading your photo and marking every hold. Pick a color whenever you're ready."
               : detected && selected
                 ? `Your ${selected.label.toLowerCase()} holds are numbered on the photo, start to finish. Your coach uses those numbers when it talks about your climb.`
                 : <>Routes share the wall, so your hold color tells <span className="brand">beta</span> which climb is yours. Every hold in that color belongs to your route, ready to carry into VR.</>}

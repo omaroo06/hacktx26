@@ -1,8 +1,8 @@
 import { useRef, useState, type CSSProperties } from "react";
-import { Check, CircleAlert, Eye, FileJson, Film, LoaderCircle, MessageSquareText, RotateCw, Sparkles, X } from "lucide-react";
+import { Check, CircleAlert, Eye, Film, LoaderCircle, MessageSquareText, RotateCw, Sparkles, X } from "lucide-react";
 import type { Experience } from "../../types/coach";
 import { useFileDrop } from "../../hooks/useFileDrop";
-import { CLIP_ACCEPT, displayName, type Climber } from "./useCrew";
+import { CLIP_ACCEPT, cleanMeters, displayName, switchUnits, type Climber } from "./useCrew";
 
 const TINTS = ["var(--color-gold)", "var(--color-sky)", "var(--color-mint)", "var(--color-lavender)"];
 export const tintFor = (index: number) => TINTS[index % TINTS.length];
@@ -27,7 +27,6 @@ interface ClimberCardProps {
 
 export function ClimberCard({ climber: c, index, canRemove, blockedReason, onChange, onClip, onRemove, onAnalyze, onView }: ClimberCardProps) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const poseRef = useRef<HTMLInputElement>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const name = displayName(c, index);
   const busy = c.stage === "watching" || c.stage === "coaching";
@@ -39,17 +38,6 @@ export function ClimberCard({ climber: c, index, canRemove, blockedReason, onCha
     setLocalError(onClip(file));
   };
   const { isDragging, dropHandlers } = useFileDrop(takeFiles);
-
-  const readPose = async (file: File | undefined) => {
-    if (!file) return;
-    try {
-      // Re-coaching with measurements reuses Gemini's report; only Muse runs again.
-      onChange({ poseReport: JSON.parse(await file.text()), poseFileName: file.name, feedback: null, stage: c.report ? "idle" : c.stage });
-      setLocalError(null);
-    } catch {
-      setLocalError(`“${file.name}” isn't valid JSON. Export observations.json from the AI Mentor again.`);
-    }
-  };
 
   return (
     <article className="climber-card anim-pop-in" style={{ "--tint": tintFor(index) } as CSSProperties} aria-labelledby={`${idBase}-title`}>
@@ -82,27 +70,42 @@ export function ClimberCard({ climber: c, index, canRemove, blockedReason, onCha
         )}
       </header>
 
-      <div className="grid grid-cols-2 gap-3">
-        <fieldset className="min-w-0">
-          <legend className="field-label">Height</legend>
-          <div className="ftin">
-            <input aria-label="Height, feet" inputMode="numeric" className="field-input field-input-sm" placeholder="5" maxLength={1} value={c.heightFt} onChange={(e) => onChange({ heightFt: e.target.value.replace(/\D/g, "") })} disabled={busy} />
-            <span aria-hidden="true">ft</span>
-            <input aria-label="Height, inches" inputMode="numeric" className="field-input field-input-sm" placeholder="9" maxLength={2} value={c.heightIn} onChange={(e) => onChange({ heightIn: e.target.value.replace(/\D/g, "") })} disabled={busy} />
-            <span aria-hidden="true">in</span>
+      <div>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <span className="field-label !mb-0">Body size</span>
+          <div className="seg seg-xs" role="group" aria-label="Units">
+            {(["ft", "m"] as const).map((u) => (
+              <button key={u} type="button" aria-pressed={c.unit === u} onClick={() => onChange(switchUnits(c, u))} disabled={busy}>
+                {u}
+              </button>
+            ))}
           </div>
-        </fieldset>
-        <fieldset className="min-w-0">
-          <legend className="field-label">
-            Wingspan <span className="opacity-55">· opt.</span>
-          </legend>
-          <div className="ftin">
-            <input aria-label="Wingspan, feet" inputMode="numeric" className="field-input field-input-sm" placeholder="5" maxLength={1} value={c.spanFt} onChange={(e) => onChange({ spanFt: e.target.value.replace(/\D/g, "") })} disabled={busy} />
-            <span aria-hidden="true">ft</span>
-            <input aria-label="Wingspan, inches" inputMode="numeric" className="field-input field-input-sm" placeholder="11" maxLength={2} value={c.spanIn} onChange={(e) => onChange({ spanIn: e.target.value.replace(/\D/g, "") })} disabled={busy} />
-            <span aria-hidden="true">in</span>
-          </div>
-        </fieldset>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Measure
+            id={`${idBase}-height`}
+            label="Height"
+            unit={c.unit}
+            meters={c.heightM}
+            feet={c.heightFt}
+            inches={c.heightIn}
+            disabled={busy}
+            onMeters={(v) => onChange({ heightM: cleanMeters(v) })}
+            onFeet={(ft, inch) => onChange({ heightFt: ft, heightIn: inch })}
+          />
+          <Measure
+            id={`${idBase}-span`}
+            label="Wingspan"
+            optional
+            unit={c.unit}
+            meters={c.spanM}
+            feet={c.spanFt}
+            inches={c.spanIn}
+            disabled={busy}
+            onMeters={(v) => onChange({ spanM: cleanMeters(v) })}
+            onFeet={(ft, inch) => onChange({ spanFt: ft, spanIn: inch })}
+          />
+        </div>
       </div>
 
       <fieldset>
@@ -151,29 +154,6 @@ export function ClimberCard({ climber: c, index, canRemove, blockedReason, onCha
         </button>
       )}
 
-      <details className="pose-peek">
-        <summary>
-          <FileJson size={15} strokeWidth={2.6} /> AI Mentor pose report <span className="opacity-55">· optional</span>
-        </summary>
-        <p className="mt-2 text-[0.85rem] text-ink/70">
-          Attach the <code>observations.json</code> the MediaPipe AI Mentor exports. The coach treats its elbow angles as measured data.
-        </p>
-        <input ref={poseRef} type="file" accept="application/json,.json" className="sr-only" tabIndex={-1} onChange={(e) => { void readPose(e.target.files?.[0]); e.target.value = ""; }} />
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <button type="button" className="btn btn-paper btn-sm" onClick={() => poseRef.current?.click()} disabled={busy}>
-            {c.poseFileName ? "Replace report" : "Attach report"}
-          </button>
-          {c.poseFileName && (
-            <span className="tag">
-              {c.poseFileName}
-              <button type="button" className="tag-x" aria-label="Remove pose report" onClick={() => onChange({ poseReport: null, poseFileName: null })}>
-                <X size={11} strokeWidth={3.5} />
-              </button>
-            </span>
-          )}
-        </div>
-      </details>
-
       {(localError || c.error) && (
         <div className="alert alert-sm" role="alert">
           <CircleAlert size={18} strokeWidth={2.6} className="mt-0.5 shrink-0" />
@@ -191,7 +171,7 @@ export function ClimberCard({ climber: c, index, canRemove, blockedReason, onCha
         ) : busy ? (
           <button type="button" className="btn btn-paper btn-sm w-full" disabled aria-live="polite">
             <LoaderCircle size={17} strokeWidth={2.8} className="spin" />
-            {c.stage === "watching" ? "Gemini is watching…" : "Muse Spark is coaching…"}
+            beta is analyzing…
           </button>
         ) : (
           <button type="button" className="btn btn-gold btn-sm w-full" onClick={onAnalyze} disabled={!c.clip || !!blockedReason} title={blockedReason ?? undefined}>
@@ -220,5 +200,43 @@ function StageTrack({ stage, hasReport }: { stage: Climber["stage"]; hasReport: 
         </li>
       ))}
     </ol>
+  );
+}
+
+interface MeasureProps {
+  id: string;
+  label: string;
+  optional?: boolean;
+  unit: "m" | "ft";
+  meters: string;
+  feet: string;
+  inches: string;
+  disabled: boolean;
+  onMeters: (value: string) => void;
+  onFeet: (feet: string, inches: string) => void;
+}
+
+/** One body measurement, typed in meters (1.52) or feet and inches (5 ft 0 in). */
+function Measure({ id, label, optional, unit, meters, feet, inches, disabled, onMeters, onFeet }: MeasureProps) {
+  const digits = (v: string, max: number) => v.replace(/\D/g, "").slice(0, max);
+  return (
+    <div className="min-w-0">
+      <label htmlFor={id} className="field-label">
+        {label} {optional && <span className="opacity-55">· opt.</span>}
+      </label>
+      {unit === "m" ? (
+        <div className="ftin">
+          <input id={id} inputMode="decimal" className="field-input field-input-sm w-[4.2rem]" placeholder="1.52" value={meters} onChange={(e) => onMeters(e.target.value)} disabled={disabled} />
+          <span aria-hidden="true">m</span>
+        </div>
+      ) : (
+        <div className="ftin">
+          <input id={id} aria-label={`${label}, feet`} inputMode="numeric" className="field-input field-input-sm w-[2.6rem]" placeholder="5" value={feet} onChange={(e) => onFeet(digits(e.target.value, 1), inches)} disabled={disabled} />
+          <span aria-hidden="true">ft</span>
+          <input aria-label={`${label}, inches`} inputMode="numeric" className="field-input field-input-sm w-[2.6rem]" placeholder="0" value={inches} onChange={(e) => onFeet(feet, digits(e.target.value, 2))} disabled={disabled} />
+          <span aria-hidden="true">in</span>
+        </div>
+      )}
+    </div>
   );
 }

@@ -55,10 +55,7 @@ Types for every request and response are in `src/types/coach.ts`.
 
 ## Hooking up the AI Mentor (MediaPipe)
 
-Two ways to give the coach measured pose data:
-
-1. **Manual:** in a climber card, open "AI Mentor pose report" and attach the `observations.json` the Streamlit app exports.
-2. **Automatic:** expose the pose pipeline as an endpoint that takes a multipart `video` field and returns the same observations JSON, then set `POSE_SERVICE_URL` in `.env`. The web app calls it alongside Gemini for every clip. A FastAPI wrapper is about 15 lines:
+To give the coach measured pose data, expose the pose pipeline as an endpoint that takes a multipart `video` field and returns the `observations.json` data, then set `POSE_SERVICE_URL` in `.env`. The web app calls it alongside Gemini for every clip. A FastAPI wrapper is about 15 lines:
 
 ```python
 from fastapi import FastAPI, UploadFile

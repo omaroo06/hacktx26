@@ -8,6 +8,7 @@ const LINKS = [
   { id: "wall", label: "climbing wall" },
   { id: "coach", label: "coach" },
   { id: "how", label: "how it works" },
+  { id: "vr", label: "VR" },
 ] as const;
 
 const SECTION_IDS = ["top", "wall", "coach", "how", "vr"] as const;

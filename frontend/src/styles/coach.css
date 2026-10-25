@@ -247,8 +247,7 @@
   border: var(--bw-thin) dashed var(--color-ink);
   border-radius: var(--r-md);
 }
-.setup-notice code,
-.pose-peek code {
+.setup-notice code {
   padding: 0.05rem 0.35rem;
   font-size: 0.85em;
   background: var(--color-paper);
@@ -395,8 +394,19 @@
   padding: 0.35rem 0.45rem;
   text-align: center;
 }
-.ftin .field-input-sm {
-  width: 2.7rem;
+.seg-xs button {
+  padding: 0.12rem 0.6rem;
+  font-size: 0.78rem;
+}
+
+/* Hero hint that doubles as a start button */
+.press-start {
+  text-decoration: none;
+  border-radius: 6px;
+  transition: color var(--dur) ease;
+}
+.press-start:hover {
+  color: var(--color-forest);
 }
 
 .seg {
@@ -481,14 +491,6 @@
   border-radius: 12px;
 }
 
-.pose-peek summary {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.88rem;
-  font-weight: 800;
-  cursor: pointer;
-}
 .tag-x {
   display: grid;
   place-items: center;
@@ -817,13 +819,85 @@
 .time-chip.is-static::before {
   content: none;
 }
+.time-chip.is-empty {
+  min-width: 3.4rem;
+  justify-content: center;
+  background: var(--color-cream);
+  opacity: 0.6;
+}
+
+/* Rows that open on tap (key moments, what worked, work on) */
+.xlist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.xrow {
+  background: var(--tone-bg);
+  border: var(--bw-thin) solid var(--color-ink);
+  border-left: 7px solid var(--tone);
+  border-radius: 12px;
+  transition: box-shadow var(--dur) ease;
+}
+.xrow.is-open {
+  box-shadow: var(--shadow-xs);
+}
+.xrow-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.55rem 0.45rem 0.65rem;
+}
+.xrow-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.2rem 0.1rem;
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  text-align: left;
+  color: var(--color-ink);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.xrow-hold {
+  margin-left: 0.45rem;
+  padding: 0.05rem 0.4rem;
+  font-family: var(--font-pixel);
+  font-size: 0.56rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  vertical-align: 0.15em;
+  background: var(--color-paper);
+  border: 1.5px solid var(--color-ink);
+  border-radius: var(--r-pill);
+}
+.xrow-chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  transition: transform var(--dur) var(--ease-pop);
+}
+.xrow.is-open .xrow-chevron {
+  transform: rotate(180deg);
+}
+.xrow-body {
+  padding: 0 0.8rem 0.75rem 0.8rem;
+  font-size: 0.93rem;
+  line-height: 1.45;
+  animation: pop-in var(--dur) var(--ease-out) both;
+}
 
 .hold-ref {
   font-weight: 800;
-  text-decoration: underline;
-  text-decoration-style: wavy;
-  text-decoration-color: var(--color-gold-deep);
-  text-underline-offset: 3px;
   cursor: help;
 }
 
@@ -1101,6 +1175,140 @@
 .chat-form .btn {
   flex-shrink: 0;
   padding-inline: 1rem;
+}
+
+/* ==========================================================================
+   How it works: stop 4 links to the VR steps
+   ========================================================================== */
+
+/* Room under the cards so the compass in the corner never covers stop 4 */
+.trail-map {
+  padding-bottom: calc(var(--map-pad) + 6.5rem);
+}
+
+a.stop-card.is-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+a.stop-card.is-link:focus-visible {
+  outline: 3px solid var(--color-sky-deep);
+  outline-offset: 4px;
+}
+.stop-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  padding: 0.3rem 0.75rem;
+  font-weight: 800;
+  font-size: 0.9rem;
+  background: var(--color-gold);
+  border: var(--bw-thin) solid var(--color-ink);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-xs);
+}
+a.stop-card.is-link:hover .stop-cta svg {
+  transform: translateX(3px);
+  transition: transform var(--dur) var(--ease-pop);
+}
+
+/* ==========================================================================
+   VR setup (stop 4): its own dark section, like the wall workspace
+   ========================================================================== */
+
+:root {
+  --color-vr: #2e2850;
+  --color-vr-deep: #221d3d;
+}
+
+.vr-section-new {
+  position: relative;
+  padding-block: var(--space-section);
+  padding-bottom: calc(var(--space-section) + 3rem);
+  color: var(--color-cream);
+  background-color: var(--color-vr);
+  background-image:
+    linear-gradient(to right, rgb(212 198 243 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(212 198 243 / 0.07) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.vr-grid {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+@media (min-width: 64rem) {
+  .vr-grid {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 3rem;
+  }
+}
+
+.vr-art-card {
+  max-width: 420px;
+  padding: 1rem;
+  background-color: var(--color-lavender);
+  background-image: radial-gradient(rgb(32 40 32 / 0.14) 1.3px, transparent 1.5px);
+  background-size: 10px 10px;
+  border: var(--bw) solid var(--color-ink);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  transform: rotate(-1.5deg);
+}
+
+.vr-steps {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0 0 0 1.6rem;
+  list-style: none;
+}
+.vr-steps::before {
+  content: "";
+  position: absolute;
+  top: 1.2rem;
+  bottom: 1.6rem;
+  left: 0.55rem;
+  border-left: 4px dotted var(--color-lavender-soft);
+  opacity: 0.6;
+}
+.vr-step {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 0.8rem 1rem 0.85rem 0.6rem;
+  color: var(--color-ink);
+  background: var(--color-paper);
+  border: var(--bw-thin) solid var(--color-ink);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.vr-step-num {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  flex-shrink: 0;
+  margin-left: -1.75rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  background: var(--color-gold);
+  border: var(--bw) solid var(--color-ink);
+  border-radius: 50%;
+  box-shadow: var(--shadow-xs);
+}
+.vr-step-end {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-left: 0.2rem;
 }
 
 }

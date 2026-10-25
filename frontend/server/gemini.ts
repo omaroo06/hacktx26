@@ -300,7 +300,7 @@ function normalizeVision(raw: RawVision, route: RouteContext | null): VisionRepo
     ];
   });
 
-  const observations = (raw.observations ?? []).flatMap((o) => {
+  const observations = (raw.observations ?? []).slice(0, 6).flatMap((o) => {
     const seconds = timeOf(o.t);
     if (seconds === null || !o.detail) return [];
     return [

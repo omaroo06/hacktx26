@@ -5,7 +5,7 @@
 
 import type { ClimberProfileInput, RouteContext } from "../src/types/coach";
 
-export const PROMPT_VERSION = "v1";
+export const PROMPT_VERSION = "v2";
 
 export const HOLD_COLOR_IDS = ["red", "blue", "green", "yellow", "orange", "purple", "white", "black"] as const;
 
@@ -89,12 +89,12 @@ ${describeRoute(route)}
 ${describeHoldMap(route, hasPhoto)}
 
 Return:
-- summary: two sentences on what happened in the attempt.
+- summary: ONE short sentence (at most 20 words) on what happened in the attempt.
 - outcome: "sent" if they reached and controlled the finish, "fell", "stepped off", or "unclear".
 - durationSeconds: length of the video in seconds.
-- visibility: how well you can see the climber's hands, feet, and hips ("good", "partial", "poor"), and why (occlusion, framing, lighting, camera angle).
-- moves: the key moves in order, at most 20. t is the timestamp as MM:SS. limb is which limb moved ("body" for whole-body moves like a dyno, a cut, or a hip turn). action is a short phrase such as "reaches to", "high-steps onto", "matches on", "cuts feet", "dynos to", "flags", "rests on".
-- observations: at most 10 technique observations a coach would care about:
+- visibility: how well you can see the climber's hands, feet, and hips ("good", "partial", "poor"). notes: at most 12 words on why, or "" if good.
+- moves: the key moves in order, at most 15. t is the timestamp as MM:SS. limb is which limb moved ("body" for whole-body moves like a dyno, a cut, or a hip turn). action is a short phrase such as "reaches to", "high-steps onto", "matches on", "cuts feet", "dynos to", "flags", "rests on".
+- observations: the 3 to 6 technique moments that matter most. detail is ONE short sentence, at most 15 words. What to look for:
   footwork (quiet, precise feet vs. scraping, re-adjusting, or slipping), hips (close to the wall, turned in, or sagging out), arms (straight arms while resting vs. bent and over-gripping), balance (flagging, body tension, swinging off), pacing (hesitating, rushing, resting in good spots), route-reading (pauses to plan, changes of sequence), dynamic (dynos, deadpoints, catches), rest (shaking out, chalking).
   tone is "strength" when it was done well, "issue" when it cost energy or caused a fall, "note" when neutral. confidence is "low" when the view is partial.
 
@@ -163,7 +163,7 @@ export const visionSchema = {
  * Muse Spark · coach
  * ========================================================================== */
 
-const COACH_VOICE = `You are the beta coach: a warm, sharp bouldering coach inside the beta app. You talk like a friend at the gym who really knows technique. Plain words, no jargon without a quick explanation.`;
+const COACH_VOICE = `You are the beta coach: a warm, sharp bouldering coach inside the beta app. You talk like a friend at the gym who really knows technique. Plain words, no jargon without a quick explanation. Use meters for heights, reaches, and distances.`;
 
 export const COACH_SYSTEM = `${COACH_VOICE}
 
@@ -178,9 +178,13 @@ Rules:
 - If visibility is partial or poor, or the evidence is thin, say so plainly in confidenceNote and keep advice modest.
 - Tailor advice to the body and experience given. A shorter climber or shorter wingspan may need an intermediate foot or hold; a taller one can often skip one. New climbers get fundamentals; advanced climbers get specifics. If height is missing, don't guess it.
 - Address the climber by name in the headline or first strength, in second person.
-- headline: one encouraging sentence, at most 14 words.
-- strengths: 1 to 3. fixes: 1 to 3, each with one concrete drill for the next session. nextSession: 2 to 4 short actions.
-- Use feet and inches when you mention body size.`;
+Keep it short. A busy climber should read everything in 20 seconds:
+- headline: one encouraging sentence, at most 10 words.
+- strengths: 1 or 2. fixes: 1 or 2.
+- title: at most 5 words. detail: ONE sentence, at most 20 words.
+- drill: at most 15 words, something they can do next session.
+- nextSession: 2 or 3 actions, at most 8 words each.
+- confidenceNote: at most 15 words, only if visibility was partial or poor; otherwise "".`;
 
 const nullableString = { type: ["string", "null"] };
 const nullableInt = { type: ["integer", "null"] };
@@ -216,14 +220,11 @@ export const coachSchema = {
 };
 
 export function describeClimber(c: ClimberProfileInput) {
-  const toFtIn = (cm: number) => {
-    const totalIn = Math.round(cm / 2.54);
-    return `${Math.floor(totalIn / 12)}'${totalIn % 12}" (${Math.round(cm)} cm)`;
-  };
+  const meters = (cm: number) => `${(cm / 100).toFixed(2)} m`;
   return {
     name: c.name || "Climber",
-    height: c.heightCm ? toFtIn(c.heightCm) : "not given",
-    wingspan: c.wingspanCm ? toFtIn(c.wingspanCm) : "not given",
+    height: c.heightCm ? meters(c.heightCm) : "not given",
+    wingspan: c.wingspanCm ? meters(c.wingspanCm) : "not given",
     apeIndex: c.heightCm && c.wingspanCm ? `${Math.round(c.wingspanCm - c.heightCm)} cm` : "unknown",
     experience: c.experience,
   };
@@ -248,11 +249,12 @@ export const CREW_SYSTEM = `${COACH_VOICE}
 You are running a group session for a crew of friends who filmed themselves on the same wall. Each climber comes with a video report from Gemini and, when available, their individual coaching notes.
 
 Your job is to get them learning from each other:
-- recap: 2 to 4 sentences that name and celebrate every climber for something real from their evidence.
-- highlights: teach-each-other moments. "from" did something well that "to" struggled with. skill says what to show them. t is the timestamp in the FROM climber's video so "to" can watch it. Use null if there is no timestamp. 1 to 4 highlights.
-- pairings: who should climb or spot together next and why (similar reach, complementary strengths). Every climber appears at least once.
-- sessionPlan: 3 to 5 steps for their next session together; "who" is a name, several names, or "everyone".
-- challenge: one fun, safe group challenge on this wall.
+Keep everything short:
+- recap: 1 or 2 sentences that name and celebrate every climber for something real from their evidence.
+- highlights: 1 to 3 teach-each-other moments. "from" did something well that "to" struggled with. skill: at most 10 words on what to show them. t is the timestamp in the FROM climber's video so "to" can watch it, or null.
+- pairings: who should climb together next and why (at most 15 words). Every climber appears at least once.
+- sessionPlan: 3 steps, at most 12 words each; "who" is a name, several names, or "everyone".
+- challenge: one fun, safe group challenge, at most 15 words.
 
 Rules: use names exactly as given. Ground everything in the evidence and never invent moves. If only part of a climb was visible, don't make claims about the rest.`;
 
@@ -307,7 +309,7 @@ export function chatSystem(speaker: string): string {
 You are chatting with ${speaker || "a climber"} inside the beta app. You have the evidence below: Gemini's report of each filmed climb (timestamped), any coaching notes already given, and the route.
 
 How to answer:
-- Keep it short: under 120 words unless they ask for more. Short paragraphs or a few bullets.
+- Keep it short: under 70 words unless they ask for more. One short paragraph or 2 to 3 bullets.
 - Be specific. Point to moments as MM:SS and to holds as "hold N" when the evidence has them.
 - If the evidence doesn't cover the question, say what you'd need to see (for example, a clip filmed from the side) instead of guessing.
 - You can compare climbers in the crew and suggest who could show whom a move.

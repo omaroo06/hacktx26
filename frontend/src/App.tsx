@@ -3,9 +3,9 @@ import { Footer } from "./components/layout/Footer";
 import { Hero } from "./components/hero/Hero";
 import { WallWorkspace } from "./components/workspace/WallWorkspace";
 import { HowItWorks } from "./components/how/HowItWorks";
-import { VrPreview } from "./components/vr/VrPreview";
 import { RidgeDivider } from "./components/decor/Ornaments";
 import { CoachSection } from "./components/coach/CoachSection";
+import { VrSetup } from "./components/vr/VrSetup";
 import { BetaSessionProvider } from "./state/BetaSession";
 
 export default function App() {
@@ -22,8 +22,8 @@ export default function App() {
         <RidgeDivider fill="var(--color-forest)" flip className="-mt-px" />
         <CoachSection />
         <HowItWorks />
-        <RidgeDivider fill="var(--color-sky)" className="-mb-px" />
-        <VrPreview />
+        <RidgeDivider fill="var(--color-vr)" className="-mb-px" />
+        <VrSetup />
       </main>
       <Footer />
     </BetaSessionProvider>

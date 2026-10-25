@@ -6,7 +6,7 @@ import { ACCEPT_ATTRIBUTE } from "../../lib/imageValidation";
 import { UploadZone } from "./UploadZone";
 import { WallViewer } from "./WallViewer";
 import { RouteSelector } from "./RouteSelector";
-import { RouteTicket } from "./RouteTicket";
+import { CoachStep } from "./CoachStep";
 import { QuestSteps, type QuestStep } from "./QuestSteps";
 import { Sparkle } from "../decor/Ornaments";
 
@@ -117,9 +117,9 @@ export function WallWorkspace() {
                       <CheckCircle2 size={22} strokeWidth={2.6} className="mt-0.5 shrink-0" />
                       <p className="text-[0.98rem]">
                         {detection.status === "loading"
-                          ? "Looking good. Gemini is marking every hold on your photo while you choose a route."
+                          ? "Looking good. beta is marking every hold on your photo while you choose a route."
                           : detection.status === "ready"
-                            ? `Looking good. Gemini found ${detection.holds.length} holds. Choose which colored route you want to climb.`
+                            ? `Looking good. beta found ${detection.holds.length} holds. Choose which colored route you want to climb.`
                             : "Looking good. Check the preview, then choose which colored route you want to climb."}
                       </p>
                     </div>
@@ -165,18 +165,18 @@ export function WallWorkspace() {
                     route={route}
                     onChange={(patch) => setRoute((r) => ({ ...r, ...patch }))}
                     onBack={() => goTo("capture")}
-                    onConfirm={() => goTo("ticket")}
+                    onConfirm={() => goTo("coach")}
                   />
                 </div>
               )}
 
-              {step === "ticket" && photo && (
-                <div key="ticket">
+              {step === "coach" && photo && (
+                <div key="coach">
                   <p className="section-kicker flex items-center gap-2 text-forest/70">
-                    <Sparkle size={14} /> Route set
+                    <Sparkle size={14} /> Step 03 · Coach
                   </p>
-                  <h3 className="card-title mb-6 mt-2">your route is ready.</h3>
-                  <RouteTicket photo={photo} route={route} onEdit={() => goTo("route")} onStartOver={handleRemove} />
+                  <h3 className="card-title mb-6 mt-2">get coached.</h3>
+                  <CoachStep route={route} onEdit={() => goTo("route")} onStartOver={handleRemove} />
                 </div>
               )}
             </div>

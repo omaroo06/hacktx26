@@ -695,13 +695,17 @@
   align-items: center;
   gap: 0.55rem;
   max-width: 100%;
-  padding: 0.3rem 0.45rem 0.35rem 0.9rem;
+  /* MedievalSharp sits high in its line box, so a little more room on top centres the name. */
+  padding: 0.45rem 0.9rem 0.2rem;
   font-size: 1.05rem;
   line-height: 1.1;
   border: var(--bw-thin) solid var(--color-ink);
   border-radius: var(--r-pill);
   box-shadow: var(--shadow-xs);
   animation: pop-in var(--dur) var(--ease-pop) both;
+}
+.route-chip:has(.route-chip-grade) {
+  padding: 0.3rem 0.45rem 0.35rem 0.9rem;
 }
 .route-chip-grade {
   padding: 0.18rem 0.5rem;
@@ -1109,7 +1113,7 @@ li:nth-child(3) > .tip-icon {
 
   .trail-stops {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0;
   }
   .trail-stops::before {
@@ -1131,13 +1135,16 @@ li:nth-child(3) > .tip-icon {
     margin-top: 20px;
   }
   .trail-stop-2 .trail-medallion {
-    margin-top: 120px;
+    margin-top: 110px;
   }
   .trail-stop-3 .trail-medallion {
-    margin-top: 50px;
+    margin-top: 40px;
+  }
+  .trail-stop-4 .trail-medallion {
+    margin-top: 100px;
   }
   .stop-card {
-    width: 80%;
+    width: 90%;
     box-shadow: var(--shadow-lg);
   }
 }

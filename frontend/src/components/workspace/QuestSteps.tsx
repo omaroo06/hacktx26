@@ -1,11 +1,11 @@
 import { Check } from "lucide-react";
 
-export type QuestStep = "capture" | "route" | "ticket";
+export type QuestStep = "capture" | "route" | "coach";
 
 const STEPS: { id: QuestStep; label: string }[] = [
   { id: "capture", label: "Capture" },
   { id: "route", label: "Choose route" },
-  { id: "ticket", label: "Route set" },
+  { id: "coach", label: "Get coached" },
 ];
 
 export function QuestSteps({ current, hasPhoto }: { current: QuestStep; hasPhoto: boolean }) {
@@ -14,7 +14,7 @@ export function QuestSteps({ current, hasPhoto }: { current: QuestStep; hasPhoto
   return (
     <ol className="quest-steps" aria-label="Workspace progress">
       {STEPS.map((step, i) => {
-        const done = i < currentIndex || (step.id === "capture" && hasPhoto) || (step.id === "ticket" && current === "ticket");
+        const done = i < currentIndex || (step.id === "capture" && hasPhoto) || (step.id === "coach" && current === "coach");
         const isCurrent = i === currentIndex;
         return (
           <li

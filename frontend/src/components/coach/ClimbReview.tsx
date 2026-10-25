@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { CheckCircle2, Dumbbell, Eye, Footprints, Hand, Info, ListChecks, Sparkles, TriangleAlert } from "lucide-react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { CheckCircle2, ChevronDown, Dumbbell, Eye, Footprints, Info, ListChecks, Sparkles, TriangleAlert } from "lucide-react";
 import type { ClimbObservation, CoachFeedback, ObservationTone, VisionReport } from "../../types/coach";
 import { useBetaSession } from "../../state/BetaSession";
 import { HoldOverlay } from "../workspace/HoldOverlay";
@@ -19,6 +19,9 @@ interface ClimbReviewProps {
   geminiModel: string | null;
   museModel: string | null;
 }
+
+type Actions = { onSeek: (s: number) => void; onHold?: (n: number | null) => void };
+type HoverProps = { onMouseEnter?: () => void; onMouseLeave?: () => void };
 
 const TONE_LABEL: Record<ObservationTone, string> = { strength: "Strength", issue: "Work on", note: "Note" };
 const OUTCOME_LABEL: Record<VisionReport["outcome"], string> = {
@@ -51,20 +54,22 @@ export function ClimbReview({ climber, name, seek, geminiModel, museModel }: Cli
     if (seek && seek.id === climber.id) seekTo(seek.seconds);
   }, [seek, climber.id]);
 
-  const actions = { onSeek: seekTo, onHold: showWall ? setHighlightHold : undefined };
+  const actions: Actions = { onSeek: seekTo, onHold: showWall ? setHighlightHold : undefined };
+  const holdHover = (n: number | null): HoverProps =>
+    showWall && n ? { onMouseEnter: () => setHighlightHold(n), onMouseLeave: () => setHighlightHold(null) } : {};
 
   return (
     <div className="review anim-pop-in">
-      {/* ---------------- What Gemini saw ---------------- */}
+      {/* ---------------- What beta saw ---------------- */}
       <section className="review-card" aria-labelledby={`seen-${climber.id}`}>
         <div className="review-card-head">
           <span className="review-icon" style={{ "--tint": "var(--color-sky)" } as CSSProperties}>
             <Eye size={18} strokeWidth={2.6} />
           </span>
           <div className="min-w-0">
-            <p className="pixel text-[0.62rem] text-ink/60">Gemini · {climber.visionModel ?? geminiModel ?? "vision"}</p>
+            <p className="pixel text-[0.62rem] text-ink/60">Vision · {climber.visionModel ?? geminiModel ?? "Gemini"}</p>
             <h4 id={`seen-${climber.id}`} className="text-[1.6rem] leading-tight">
-              what gemini saw.
+              what <span className="brand">beta</span> saw.
             </h4>
           </div>
           <span className={`tag ml-auto outcome-${report.outcome.replace(" ", "-")}`}>{OUTCOME_LABEL[report.outcome]}</span>
@@ -94,37 +99,40 @@ export function ClimbReview({ climber, name, seek, geminiModel, museModel }: Cli
 
         <Timeline observations={report.observations} duration={duration} now={now} onSeek={seekTo} />
 
-        <p className="mt-4 text-[0.98rem]">{report.summary}</p>
-        {report.visibility.quality !== "good" && (
+        <p className="mt-4 text-[0.98rem] leading-snug">{report.summary}</p>
+        {report.visibility.quality !== "good" && report.visibility.notes && (
           <p className="visibility-note">
             <Info size={15} strokeWidth={2.6} className="mt-0.5 shrink-0" />
-            <span>
-              <strong>{report.visibility.quality === "poor" ? "Hard to see:" : "Partly hidden:"}</strong> {report.visibility.notes}
-            </span>
+            <span>{report.visibility.notes}</span>
           </p>
         )}
 
-        <ul className="obs-list" role="list">
-          {report.observations.map((o, i) => (
-            <li
-              key={i}
-              className={`obs tone-${o.tone}`}
-              onMouseEnter={() => o.holdNumber && showWall && setHighlightHold(o.holdNumber)}
-              onMouseLeave={() => showWall && setHighlightHold(null)}
-            >
-              <TimeChip t={o.t} onSeek={seekTo} />
-              <div className="min-w-0">
-                <p className="pixel text-[0.58rem] text-ink/60">
-                  {TONE_LABEL[o.tone]} · {o.category.replace("-", " ")}
-                  {o.holdNumber ? ` · hold ${o.holdNumber}` : ""}
-                  {o.confidence === "low" ? " · low confidence" : ""}
-                </p>
-                <p className="text-[0.95rem] leading-snug">{o.detail}</p>
-              </div>
-            </li>
-          ))}
-          {!report.observations.length && <li className="text-[0.95rem] text-ink/65">Gemini didn't flag any technique moments in this clip.</li>}
-        </ul>
+        {report.observations.length > 0 ? (
+          <div className="mt-5">
+            <p className="field-label">Key moments · tap to open</p>
+            <ul className="xlist" role="list">
+              {report.observations.map((o, i) => (
+                <Expandable
+                  key={i}
+                  tone={o.tone}
+                  chip={<TimeChip t={o.t} onSeek={seekTo} />}
+                  title={
+                    <>
+                      {TONE_LABEL[o.tone]} · {o.category.replace("-", " ")}
+                      {o.holdNumber ? <span className="xrow-hold">hold {o.holdNumber}</span> : null}
+                    </>
+                  }
+                  {...holdHover(o.holdNumber)}
+                >
+                  <p>{o.detail}</p>
+                  {o.confidence === "low" && <p className="mt-1 pixel text-[0.56rem] text-ink/55">Low confidence: partly hidden in the video</p>}
+                </Expandable>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="mt-4 text-[0.95rem] text-ink/65">No technique moments flagged in this clip.</p>
+        )}
 
         {report.moves.length > 0 && (
           <details className="data-peek mt-4">
@@ -136,7 +144,7 @@ export function ClimbReview({ climber, name, seek, geminiModel, museModel }: Cli
                   <span>
                     <span className="font-extrabold">{m.limb}</span> {m.action}
                     {m.holdNumber ? (
-                      <span className="hold-ref" onMouseEnter={() => setHighlightHold(m.holdNumber)} onMouseLeave={() => setHighlightHold(null)}>
+                      <span className="hold-ref" {...holdHover(m.holdNumber)}>
                         {" "}
                         hold {m.holdNumber}
                       </span>
@@ -164,14 +172,24 @@ export function ClimbReview({ climber, name, seek, geminiModel, museModel }: Cli
           </div>
         </div>
 
-        {feedback ? <Feedback feedback={feedback} actions={actions} /> : <p className="mt-4 text-ink/70">The coach hasn't written notes for this climb yet.</p>}
+        {feedback ? <Feedback feedback={feedback} actions={actions} holdHover={holdHover} /> : <p className="mt-4 text-ink/70">The coach hasn't written notes for this climb yet.</p>}
         {climber.coachCached && <p className="pixel mt-3 text-[0.56rem] text-ink/45">Saved notes · the coach was unreachable, so these are from the last run</p>}
       </section>
     </div>
   );
 }
 
-function Feedback({ feedback, actions }: { feedback: CoachFeedback; actions: { onSeek: (s: number) => void; onHold?: (n: number | null) => void } }) {
+function Feedback({
+  feedback,
+  actions,
+  holdHover,
+}: {
+  feedback: CoachFeedback;
+  actions: Actions;
+  holdHover: (n: number | null) => HoverProps;
+}) {
+  const chip = (t: string | null) => (t ? <TimeChip t={t} onSeek={actions.onSeek} /> : <span className="time-chip is-static is-empty">—</span>);
+
   return (
     <div className="mt-4 flex flex-col gap-5">
       <p className="feedback-headline">{feedback.headline}</p>
@@ -181,17 +199,11 @@ function Feedback({ feedback, actions }: { feedback: CoachFeedback; actions: { o
           <p className="field-label flex items-center gap-1.5">
             <CheckCircle2 size={14} strokeWidth={3} /> What worked
           </p>
-          <ul className="flex flex-col gap-2.5" role="list">
+          <ul className="xlist" role="list">
             {feedback.strengths.map((s, i) => (
-              <li key={i} className="feedback-item tone-strength" onMouseEnter={() => s.holdNumber && actions.onHold?.(s.holdNumber)} onMouseLeave={() => actions.onHold?.(null)}>
-                <div className="flex items-start justify-between gap-3">
-                  <p className="font-extrabold leading-snug">{s.title}</p>
-                  {s.t && <TimeChip t={s.t} onSeek={actions.onSeek} />}
-                </div>
-                <p className="mt-1 text-[0.95rem] leading-snug">
-                  <RichInline text={s.detail} actions={actions} />
-                </p>
-              </li>
+              <Expandable key={i} tone="strength" chip={chip(s.t)} title={s.title} {...holdHover(s.holdNumber)}>
+                <p>{inline(s.detail, actions)}</p>
+              </Expandable>
             ))}
           </ul>
         </div>
@@ -202,16 +214,10 @@ function Feedback({ feedback, actions }: { feedback: CoachFeedback; actions: { o
           <p className="field-label flex items-center gap-1.5">
             <TriangleAlert size={14} strokeWidth={3} /> Work on
           </p>
-          <ul className="flex flex-col gap-2.5" role="list">
+          <ul className="xlist" role="list">
             {feedback.fixes.map((f, i) => (
-              <li key={i} className="feedback-item tone-issue" onMouseEnter={() => f.holdNumber && actions.onHold?.(f.holdNumber)} onMouseLeave={() => actions.onHold?.(null)}>
-                <div className="flex items-start justify-between gap-3">
-                  <p className="font-extrabold leading-snug">{f.title}</p>
-                  {f.t && <TimeChip t={f.t} onSeek={actions.onSeek} />}
-                </div>
-                <p className="mt-1 text-[0.95rem] leading-snug">
-                  <RichInline text={f.detail} actions={actions} />
-                </p>
+              <Expandable key={i} tone="issue" chip={chip(f.t)} title={f.title} {...holdHover(f.holdNumber)}>
+                <p>{inline(f.detail, actions)}</p>
                 {f.drill && (
                   <p className="drill">
                     <Dumbbell size={16} strokeWidth={2.6} className="mt-0.5 shrink-0" />
@@ -220,7 +226,7 @@ function Feedback({ feedback, actions }: { feedback: CoachFeedback; actions: { o
                     </span>
                   </p>
                 )}
-              </li>
+              </Expandable>
             ))}
           </ul>
         </div>
@@ -235,34 +241,58 @@ function Feedback({ feedback, actions }: { feedback: CoachFeedback; actions: { o
             {feedback.nextSession.map((s, i) => (
               <li key={i}>
                 <Footprints size={15} strokeWidth={2.6} className="mt-1 shrink-0" />
-                <span>
-                  <RichInline text={s} actions={actions} />
-                </span>
+                <span>{inline(s, actions)}</span>
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      {feedback.confidenceNote && (
-        <p className="visibility-note">
-          <Hand size={15} strokeWidth={2.6} className="mt-0.5 shrink-0" />
-          <span>{feedback.confidenceNote}</span>
-        </p>
-      )}
+      {feedback.confidenceNote && <p className="pixel text-[0.6rem] leading-relaxed text-ink/55">Note · {feedback.confidenceNote}</p>}
     </div>
   );
 }
 
-/** Short model text with clickable timestamps and hold references (no block elements). */
-function RichInline({ text, actions }: { text: string; actions: { onSeek: (s: number) => void; onHold?: (n: number | null) => void } }) {
-  return <>{inline(text.replace(/\*\*/g, ""), actions)}</>;
+/** A one-line row that opens to show its details. The time chip outside the toggle seeks the video. */
+function Expandable({
+  tone,
+  chip,
+  title,
+  children,
+  onMouseEnter,
+  onMouseLeave,
+}: {
+  tone: ObservationTone;
+  chip: ReactNode;
+  title: ReactNode;
+  children: ReactNode;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const bodyId = useId();
+  return (
+    <li className={`xrow tone-${tone} ${open ? "is-open" : ""}`} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+      <div className="xrow-head">
+        {chip}
+        <button type="button" className="xrow-toggle" aria-expanded={open} aria-controls={bodyId} onClick={() => setOpen((o) => !o)}>
+          <span className="min-w-0 flex-1">{title}</span>
+          <ChevronDown size={18} strokeWidth={3} className="xrow-chevron" aria-hidden="true" />
+        </button>
+      </div>
+      {open && (
+        <div id={bodyId} className="xrow-body">
+          {children}
+        </div>
+      )}
+    </li>
+  );
 }
 
 function Timeline({ observations, duration, now, onSeek }: { observations: ClimbObservation[]; duration: number; now: number; onSeek: (s: number) => void }) {
   const pct = (s: number) => `${Math.min(100, Math.max(0, (s / duration) * 100))}%`;
   return (
-    <div className="timeline" role="group" aria-label="Moments Gemini flagged, on the clip's timeline">
+    <div className="timeline" role="group" aria-label="Key moments on the clip's timeline">
       <span className="timeline-progress" style={{ width: pct(now) }} aria-hidden="true" />
       {observations.map((o, i) => (
         <button

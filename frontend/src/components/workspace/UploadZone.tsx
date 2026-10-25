@@ -47,7 +47,7 @@ export function UploadZone({ onBrowse, isDragging, isLoading }: UploadZoneProps)
           {isLoading ? "reading your wall." : isDragging ? "drop it right here." : "drop your wall photo here."}
         </h3>
         <p className="mx-auto mt-3 max-w-sm text-ink/75">
-          Snap the whole wall, straight on. Gemini reads it to find every hold.
+          Snap the whole wall, straight on. beta reads it to find every hold.
         </p>
         <span className="btn btn-forest btn-sm mt-6 pointer-events-none">
           <ImagePlus size={18} strokeWidth={2.6} />

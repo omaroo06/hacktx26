@@ -18,7 +18,7 @@ function Cloud({ className = "", style }: { className?: string; style?: CSSPrope
   );
 }
 
-const MARQUEE = ["Capture", "Discover", "Get coached", "Enter the World", "Every wall has a story", "Learn from your crew", "Step into VR"];
+const MARQUEE = ["Capture", "Discover", "Get coached", "Every wall has a story", "Map your moves", "Learn from your crew"];
 
 export function Hero() {
   return (
@@ -57,7 +57,7 @@ export function Hero() {
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4 anim-pop-in" style={{ animationDelay: "240ms" }}>
             <a href="#wall" className="btn btn-gold btn-lg">
-              Explore Your Wall
+              Press Start
               <ArrowRight size={22} strokeWidth={3} className="btn-arrow" />
             </a>
             <a href="#how" className="btn btn-paper btn-lg">
@@ -66,12 +66,12 @@ export function Hero() {
             </a>
           </div>
 
-          <p className="mt-6 flex items-center gap-2 pixel text-[0.72rem] text-ink/70" aria-hidden="true">
-            <svg width="10" height="12" viewBox="0 0 10 12" className="anim-blink">
+          <a href="#wall" className="press-start mt-6 flex items-center gap-2 pixel text-[0.72rem] text-ink/70">
+            <svg width="10" height="12" viewBox="0 0 10 12" className="anim-blink" aria-hidden="true">
               <path d="M0 0 L10 6 L0 12 Z" fill="currentColor" />
             </svg>
             Press start to map your first wall
-          </p>
+          </a>
         </div>
 
         <div className="hero-scene">

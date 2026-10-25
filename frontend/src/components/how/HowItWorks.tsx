@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
-import { Flag } from "lucide-react";
-import { CaptureArt, CompassRose, DiscoverArt, EnterArt } from "./StageArt";
+import { ArrowRight, Flag } from "lucide-react";
+import { CaptureArt, CoachArt, CompassRose, DiscoverArt, VrArt } from "./StageArt";
 interface Stage {
   num: string;
   title: string;
@@ -9,6 +9,9 @@ interface Stage {
   art: ReactNode;
   tint: string;
   tilt: string;
+  /** Makes the whole card a link to another part of the page. */
+  href?: string;
+  cta?: string;
 }
 
 const STAGES: Stage[] = [
@@ -32,22 +35,33 @@ const STAGES: Stage[] = [
   },
   {
     num: "03",
-    title: "enter the world.",
-    line: "Step inside your climb in virtual reality.",
-    detail: "Your wall is rebuilt at true scale in Meta Quest 2, every hold right where it belongs.",
-    art: <EnterArt />,
+    title: "get coached.",
+    line: "Film your climb and get AI coaching.",
+    detail: "Gemini watches every move. Muse Spark tells you what worked, what to fix, and who in your crew can show you how.",
+    art: <CoachArt />,
     tint: "var(--color-mint)",
     tilt: "-0.6deg",
+  },
+  {
+    num: "04",
+    title: "enter VR.",
+    line: "See your wall in Meta Quest 2.",
+    detail: "Your wall rebuilt at true scale in the headset, every hold where it belongs.",
+    art: <VrArt />,
+    tint: "var(--color-lavender)",
+    tilt: "0.9deg",
+    href: "#vr",
+    cta: "See the steps",
   },
 ];
 
 /*
  * Drawn in a 1000×220 box laid over the top of the stop columns. Medallion
- * centers sit at x = 1/6, 1/2, 5/6 and y = 56, 156, 86 (see .trail-stop-n in
- * components.css); between stops the path drops through the card gutters.
+ * centers sit at x = 1/8, 3/8, 5/8, 7/8 and y = 56, 146, 76, 136 (see
+ * .trail-stop-n in components.css); between stops the path runs through the gutters.
  */
 const TRAIL =
-  "M-20 56 L166.7 56 C 290 56, 333 76, 333 108 C 333 142, 380 156, 500 156 C 600 156, 640 136, 666 116 C 700 92, 740 86, 833.3 86 C 920 86, 960 40, 1020 18";
+  "M-20 56 L125 56 C 200 56, 250 70, 250 100 C 250 132, 290 146, 375 146 C 450 146, 480 120, 500 100 C 520 82, 560 76, 625 76 C 700 76, 730 96, 750 116 C 770 134, 810 136, 875 136 C 940 136, 970 70, 1020 18";
 
 export function HowItWorks() {
   return (
@@ -59,7 +73,7 @@ export function HowItWorks() {
             how <span className="brand">beta</span> works.
           </h2>
           <p className="lede mt-4 text-ink/75">
-            Three stops between a photo on your phone and a wall you can step into. Follow the trail.
+            Four stops between a photo on your phone and a wall you can step into. Follow the trail.
           </p>
         </header>
 
@@ -100,15 +114,35 @@ export function HowItWorks() {
                 <span className="trail-medallion" aria-hidden="true">
                   {s.num}
                 </span>
-                <article className="stop-card" style={{ "--tint": s.tint, "--tilt": s.tilt } as CSSProperties}>
-                  <div className="stop-art">{s.art}</div>
-                  <div className="p-5 pt-4">
-                    <p className="pixel text-[0.7rem] text-ink/60">Stop {s.num}</p>
-                    <h3 className="mt-1 text-[1.75rem] text-forest">{s.title}</h3>
-                    <p className="display-text mt-2 text-[1.14rem] leading-snug">{s.line}</p>
-                    <p className="lede mt-2 text-[1.02rem] leading-normal text-ink/70">{s.detail}</p>
-                  </div>
-                </article>
+                {(() => {
+                  const body = (
+                    <>
+                      <div className="stop-art">{s.art}</div>
+                      <div className="p-5 pt-4">
+                        <p className="pixel text-[0.7rem] text-ink/60">Stop {s.num}</p>
+                        <h3 className="mt-1 text-[1.75rem] text-forest">{s.title}</h3>
+                        <p className="display-text mt-2 text-[1.14rem] leading-snug">{s.line}</p>
+                        <p className="lede mt-2 text-[1.02rem] leading-normal text-ink/70">{s.detail}</p>
+                        {s.cta && (
+                          <span className="stop-cta">
+                            {s.cta}
+                            <ArrowRight size={16} strokeWidth={3} />
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  );
+                  const style = { "--tint": s.tint, "--tilt": s.tilt } as CSSProperties;
+                  return s.href ? (
+                    <a href={s.href} className="stop-card is-link" style={style}>
+                      {body}
+                    </a>
+                  ) : (
+                    <article className="stop-card" style={style}>
+                      {body}
+                    </article>
+                  );
+                })()}
               </li>
             ))}
           </ol>

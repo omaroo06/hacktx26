@@ -13,6 +13,12 @@ export interface Clip {
 export interface Climber {
   id: string;
   name: string;
+  /** Which units the climber typed their body size in. */
+  unit: "m" | "ft";
+  /** Meters, e.g. "1.75". */
+  heightM: string;
+  spanM: string;
+  /** Feet and inches, e.g. "5" and "9". */
   heightFt: string;
   heightIn: string;
   spanFt: string;
@@ -41,6 +47,9 @@ let nextId = 1;
 const newClimber = (): Climber => ({
   id: `c${nextId++}`,
   name: "",
+  unit: "ft",
+  heightM: "",
+  spanM: "",
   heightFt: "",
   heightIn: "",
   spanFt: "",
@@ -62,18 +71,49 @@ export function displayName(c: Climber, index: number): string {
   return c.name.trim() || `Climber ${index + 1}`;
 }
 
-function toCm(ft: string, inches: string): number | null {
-  const f = Number(ft) || 0;
-  const i = Number(inches) || 0;
-  const total = f * 12 + i;
-  return total >= 36 && total <= 96 ? Math.round(total * 2.54) : null;
+/** "1.75" (meters) → 175 cm. Anything outside a human range counts as not given. */
+function metersToCm(meters: string): number | null {
+  if (!meters.trim()) return null;
+  const m = Number(meters.replace(",", "."));
+  return Number.isFinite(m) && m >= 0.9 && m <= 2.5 ? Math.round(m * 100) : null;
+}
+
+/** "5" ft "9" in → 175 cm. */
+function feetToCm(ft: string, inches: string): number | null {
+  if (!ft.trim() && !inches.trim()) return null;
+  const total = (Number(ft) || 0) * 12 + (Number(inches) || 0);
+  return total >= 36 && total <= 98 ? Math.round(total * 2.54) : null;
+}
+
+/** Converts what's typed when the climber switches units, so nothing is lost. */
+export function switchUnits(c: Climber, next: "m" | "ft"): Partial<Climber> {
+  if (c.unit === next) return {};
+  if (next === "ft") {
+    const toFt = (cm: number | null) => {
+      if (cm === null) return ["", ""];
+      const total = Math.round(cm / 2.54);
+      return [String(Math.floor(total / 12)), String(total % 12)];
+    };
+    const [heightFt, heightIn] = toFt(metersToCm(c.heightM));
+    const [spanFt, spanIn] = toFt(metersToCm(c.spanM));
+    return { unit: "ft", heightFt, heightIn, spanFt, spanIn };
+  }
+  const toM = (cm: number | null) => (cm === null ? "" : (cm / 100).toFixed(2));
+  return { unit: "m", heightM: toM(feetToCm(c.heightFt, c.heightIn)), spanM: toM(feetToCm(c.spanFt, c.spanIn)) };
+}
+
+/** Keeps a meters field to digits and one decimal point, like "1.75". */
+export function cleanMeters(value: string): string {
+  const s = value.replace(",", ".").replace(/[^\d.]/g, "");
+  const [whole, ...rest] = s.split(".");
+  return rest.length ? `${whole.slice(0, 1)}.${rest.join("").slice(0, 2)}` : whole.slice(0, 3);
 }
 
 export function profileOf(c: Climber, index: number): ClimberProfileInput {
   return {
     name: displayName(c, index),
-    heightCm: toCm(c.heightFt, c.heightIn),
-    wingspanCm: toCm(c.spanFt, c.spanIn),
+    heightCm: c.unit === "ft" ? feetToCm(c.heightFt, c.heightIn) : metersToCm(c.heightM),
+    wingspanCm: c.unit === "ft" ? feetToCm(c.spanFt, c.spanIn) : metersToCm(c.spanM),
     experience: c.experience,
   };
 }

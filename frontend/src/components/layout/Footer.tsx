@@ -6,7 +6,7 @@ const LINKS = [
   { href: "#wall", label: "climbing wall" },
   { href: "#coach", label: "coach" },
   { href: "#how", label: "how it works" },
-  { href: "#vr", label: "vr preview" },
+  { href: "#vr", label: "VR" },
 ];
 
 export function Footer() {
