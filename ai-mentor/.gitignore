@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Virtual environment
+.venv/
+
+# Downloaded MediaPipe models (re-downloaded automatically)
+backend/pose_analysis/models/*.task
+
+# Videos (inputs and generated outputs)
+*.mp4
+*.mov
+*.avi
+outputs/
